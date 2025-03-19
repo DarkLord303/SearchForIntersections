@@ -43,11 +43,11 @@
             Console.WriteLine("2. Enter your own circles");
             string choiceNumber = Console.ReadLine();
 
-            List<Circle> circles = new List<Circle>();
+            List<Circle> mCircles = new List<Circle>();
 
             if (choiceNumber == "1")
             {
-                circles = Circle.CreateCircleList();
+                mCircles = Circle.CreateCircleList();
             }
             else if (choiceNumber == "2")
             {
@@ -67,7 +67,7 @@
                     Console.Write("Enter R: ");
                     double r = double.Parse(Console.ReadLine());
 
-                    circles.Add(new Circle(x, y, r));
+                    mCircles.Add(new Circle(x, y, r));
                 }
             }
             else
@@ -75,16 +75,16 @@
                 Console.WriteLine("Invalid choice.");
             }
 
-            return circles;
+            return mCircles;
         }
 
         static List<Circle>[] SearchForIntersections(List<Circle> circles) 
         {
-            List<Circle>[] circleGraph = new List<Circle>[circles.Count];
-            for (int i = 0; i < circles.Count; i++) { circleGraph[i] = new List<Circle>(); }
+            List<Circle>[] circleClusters = new List<Circle>[circles.Count];
+            for (int i = 0; i < circles.Count; i++) { circleClusters[i] = new List<Circle>(); }
             for (int i = 0; i < circles.Count; i++)
             {
-                circleGraph[i].Add(circles[i]);
+                circleClusters[i].Add(circles[i]);
             }
             for (int i = 0; i < circles.Count; i++)
             {
@@ -92,45 +92,45 @@
                 {
                     if (Circle.Intersects(circles[i], circles[j]) == true && circles[i] != circles[j])
                     {
-                        circleGraph[i].Add(circles[j]);
+                        circleClusters[i].Add(circles[j]);
                     }
                 }
             }
-
-            for (int i = 0; i < circleGraph.Length; i++)
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+            for (int clusterIndexA = 0; clusterIndexA < circleClusters.Length; clusterIndexA++)
             {
-                for (int j = i + 1; j < circleGraph.Length; j++)
+                for (int clusterIndexB = clusterIndexA + 1; clusterIndexB < circleClusters.Length; clusterIndexB++)
                 {
-                    bool shouldMergeCircles = false;
+                    bool shouldMergeClusters = false;
 
 
-                    foreach (var leftCircle in circleGraph[i])
+                    foreach (var circleA in circleClusters[clusterIndexA])
                     {
-                        foreach (var rightCircle in circleGraph[j])
+                        foreach (var circleB in circleClusters[clusterIndexB])
                         {
-                            if (Circle.Intersects(leftCircle, rightCircle))
+                            if (Circle.Intersects(circleA, circleB))
                             {
-                                shouldMergeCircles = true;
+                                shouldMergeClusters = true;
                                 break;
                             }
                         }
-                        if (shouldMergeCircles) break;
+                        if (shouldMergeClusters) break;
                     }
 
 
-                    if (shouldMergeCircles)
+                    if (shouldMergeClusters)
                     {
-                        HashSet<Circle> mergedCircles = new HashSet<Circle>(circleGraph[i]);
-                        mergedCircles.UnionWith(circleGraph[j]);
+                        HashSet<Circle> mergedGroup = new HashSet<Circle>(circleClusters[clusterIndexA]);
+                        mergedGroup.UnionWith(circleClusters[clusterIndexB]);
 
-                        circleGraph[i] = mergedCircles.ToList();
-                        circleGraph[j].Clear();
+                        circleClusters[clusterIndexA] = mergedGroup.ToList();
+                        circleClusters[clusterIndexB].Clear();
                     }
                 }
             }
-            return circleGraph;
+            return circleClusters;
         }
-        static void Print_result(List<Circle>[] circleGraph) 
+        static void PrintResult(List<Circle>[] circleGraph) 
         {
             Console.WriteLine("----------------------");
             foreach (var i in circleGraph)
@@ -150,7 +150,7 @@
             List<Circle>[] circleGraph = new List<Circle>[circles.Count];
             circleGraph = SearchForIntersections(circles);
             circleGraph = circleGraph.Where(g => g.Count > 0).ToArray();
-            Print_result(circleGraph);
+            PrintResult(circleGraph);
         }
     }
 }
